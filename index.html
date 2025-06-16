@@ -24,7 +24,23 @@
 </head>
 <body>
     <div class="container">
-        <div id="register-section">
+        <div id="login-section">
+            <h2>Login</h2>
+            <form id="loginForm">
+                <label for="login-username">Username:</label>
+                <input type="text" id="login-username" required>
+
+                <label for="login-password">Password:</label>
+                <input type="password" id="login-password" required>
+
+                <button type="submit">Login</button>
+            </form>
+            <div class="toggle-form">
+                Don't have an account? <a href="#" onclick="showRegisterForm()">Register here</a>
+            </div>
+        </div>
+
+        <div id="register-section" style="display: none;">
             <h2>Register</h2>
             <form id="registrationForm">
                 <label for="reg-username">Username:</label>
@@ -51,22 +67,6 @@
                 Already have an account? <a href="#" onclick="showLoginForm()">Login here</a>
             </div>
         </div>
-
-        <div id="login-section" style="display: none;">
-            <h2>Login</h2>
-            <form id="loginForm">
-                <label for="login-username">Username:</label>
-                <input type="text" id="login-username" required>
-
-                <label for="login-password">Password:</label>
-                <input type="password" id="login-password" required>
-
-                <button type="submit">Login</button>
-            </form>
-            <div class="toggle-form">
-                Don't have an account? <a href="#" onclick="showRegisterForm()">Register here</a>
-            </div>
-        </div>
         <div id="message"></div>
     </div>
 
@@ -82,6 +82,7 @@
             messageDiv.textContent = msg;
         }
 
+        // Functions to toggle form visibility
         function showLoginForm() {
             registerSection.style.display = 'none';
             loginSection.style.display = 'block';
@@ -96,8 +97,8 @@
 
         // --- Registration Form Handler ---
         document.getElementById('registrationForm').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            showMessage('Registering...', '');
+            event.preventDefault(); // Prevent default form submission
+            showMessage('Registering...', ''); // Show loading message
 
             const username = document.getElementById('reg-username').value;
             const email = document.getElementById('reg-email').value;
@@ -116,22 +117,23 @@
                 const data = await response.json();
                 if (response.ok) {
                     showMessage(data.message || 'Registration successful!', 'success');
-                    document.getElementById('registrationForm').reset();
-                    // Optionally, redirect to login or automatically log in
-                    setTimeout(showLoginForm, 2000); // Show login form after 2 seconds
+                    document.getElementById('registrationForm').reset(); // Clear the form
+                    console.log('User registered:', data.user);
+                    setTimeout(showLoginForm, 2000); // Automatically switch to login form after 2 seconds
                 } else {
                     showMessage(data.message || 'Registration failed.', 'error');
+                    console.error('Registration error:', data.error);
                 }
             } catch (error) {
                 console.error('Registration fetch error:', error);
-                showMessage('Network error during registration.', 'error');
+                showMessage('Network error during registration. Please check your connection.', 'error');
             }
         });
 
         // --- Login Form Handler ---
         document.getElementById('loginForm').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            showMessage('Logging in...', '');
+            event.preventDefault(); // Prevent default form submission
+            showMessage('Logging in...', ''); // Show loading message
 
             const username = document.getElementById('login-username').value;
             const password = document.getElementById('login-password').value;
@@ -146,22 +148,26 @@
                 const data = await response.json();
                 if (response.ok) {
                     showMessage(data.message || 'Login successful!', 'success');
-                    localStorage.setItem('jwtToken', data.token); // Store JWT
-                    localStorage.setItem('currentUser', JSON.stringify(data.user)); // Store user info (for convenience)
+                    localStorage.setItem('jwtToken', data.token); // Store JWT securely
+                    localStorage.setItem('currentUser', JSON.stringify(data.user)); // Store user info for convenience
                     window.location.href = '/dashboard.html'; // Redirect to dashboard
                 } else {
-                    showMessage(data.message || 'Login failed.', 'error');
+                    showMessage(data.message || 'Login failed. Invalid credentials.', 'error');
+                    console.error('Login error:', data.error);
                 }
             } catch (error) {
                 console.error('Login fetch error:', error);
-                showMessage('Network error during login.', 'error');
+                showMessage('Network error during login. Please check your connection.', 'error');
             }
         });
 
-        // Check if already logged in (e.g., if user navigates back)
-        if (localStorage.getItem('jwtToken') && localStorage.getItem('currentUser')) {
-            window.location.href = '/dashboard.html';
-        }
+        // Check if user is already logged in on page load and redirect
+        // This prevents showing the login/register page if a token already exists
+        window.addEventListener('load', () => {
+            if (localStorage.getItem('jwtToken') && localStorage.getItem('currentUser')) {
+                window.location.href = '/dashboard.html';
+            }
+        });
     </script>
 </body>
 </html>
