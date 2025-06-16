@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Spreadsheet Automation</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f4f7f6; color: #333; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid #eee; margin-bottom: 20px; }
+        .header h1 { margin: 0; color: #007bff; }
+        .header button { padding: 8px 15px; background-color: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease; }
+        .header button:hover { background-color: #c82333; }
+        .dashboard-section { background-color: #ffffff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        h2 { color: #007bff; border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-top: 0; margin-bottom: 20px; }
+        ul { list-style: none; padding: 0; }
+        li { background-color: #e9ecef; padding: 12px 15px; margin-bottom: 8px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;}
+        li strong { color: #0056b3; }
+        .admin-form label { display: block; margin-bottom: 8px; color: #555; }
+        .admin-form input, .admin-form select, .admin-form button {
+            padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; width: 100%; box-sizing: border-box;
+        }
+        .admin-form button { background-color: #28a745; color: white; cursor: pointer; transition: background-color 0.3s ease; }
+        .admin-form button:hover { background-color: #218838; }
+        .admin-section-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .admin-panel { border: 1px solid #eee; padding: 15px; border-radius: 8px; background-color: #f9fafa; }
+        .admin-panel h3 { color: #6c757d; margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+        #dashboard-message { margin-top: 15px; padding: 10px; border-radius: 5px; text-align: center; font-weight: bold; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .danger-button { background-color: #dc3545; }
+        .danger-button:hover { background-color: #c82333; }
+        .action-button { margin-left: 10px; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 id="welcomeMessage"></h1>
+        <button id="logoutButton">Logout</button>
+    </div>
+
+    <div id="dashboard-message"></div>
+
+    <div class="dashboard-section" id="standardUserSection">
+        <h2>My Assigned Tools</h2>
+        <ul id="assignedToolsList">
+            <li>No tools assigned yet.</li>
+        </ul>
+    </div>
+
+    <div id="adminSections" style="display: none;">
+        <h2 style="text-align: center;">Admin/Superadmin Panel</h2>
+        <div class="admin-section-grid">
+
+            <div class="dashboard-section admin-panel">
+                <h3>Manage Company Users</h3>
+                <ul id="companyUsersList">
+                    <li>Loading users...</li>
+                </ul>
+            </div>
+
+            <div class="dashboard-section admin-panel">
+                <h3>Assign Tool to User</h3>
+                <form id="assignToolForm" class="admin-form">
+                    <label for="assign-user-select">Select User:</label>
+                    <select id="assign-user-select" required>
+                        <option value="">-- Select a User --</option>
+                    </select>
+
+                    <label for="assign-tool-select">Select Tool:</label>
+                    <select id="assign-tool-select" required>
+                        <option value="">-- Select a Tool --</option>
+                    </select>
+
+                    <button type="submit">Assign Tool</button>
+                </form>
+            </div>
+
+            <div class="dashboard-section admin-panel">
+                <h3>Register New User (in your company)</h3>
+                <form id="adminRegisterForm" class="admin-form">
+                    <label for="admin-reg-username">Username:</label>
+                    <input type="text" id="admin-reg-username" required>
+
+                    <label for="admin-reg-email">Email:</label>
+                    <input type="email" id="admin-reg-email" required>
+
+                    <label for="admin-reg-password">Password:</label>
+                    <input type="password" id="admin-reg-password" required>
+
+                    <button type="submit">Register User</button>
+                </form>
+            </div>
+
+            <div id="superadminSections" style="display: none;">
+                <div class="dashboard-section admin-panel">
+                    <h3>Create New Global/Custom Tool</h3>
+                    <form id="createToolForm" class="admin-form">
+                        <label for="new-tool-name">Tool Name:</label>
+                        <input type="text" id="new-tool-name" required>
+
+                        <label for="new-tool-description">Description:</label>
+                        <input type="text" id="new-tool-description" required>
+
+                        <label for="new-tool-is-global">Global Tool (available to all companies)?</label>
+                        <input type="checkbox" id="new-tool-is-global" style="width: auto;">
+
+                        <button type="submit">Create Tool</button>
+                    </form>
+                </div>
+
+                <div class="dashboard-section admin-panel">
+                    <h3>Assign Tool to Company</h3>
+                    <form id="assignToolToCompanyForm" class="admin-form">
+                        <label for="assign-company-select">Select Company:</label>
+                        <select id="assign-company-select" required>
+                            <option value="">-- Select a Company --</option>
+                            </select>
+
+                        <label for="assign-comp-tool-select">Select Tool:</label>
+                        <select id="assign-comp-tool-select" required>
+                            <option value="">-- Select a Tool --</option>
+                            </select>
+
+                        <button type="submit">Assign Tool to Company</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/.netlify/functions'; // Or '/api' if you set up the redirect
+
+        const dashboardMessageDiv = document.getElementById('dashboard-message');
+        const welcomeMessage = document.getElementById('welcomeMessage');
+        const logoutButton = document.getElementById('logoutButton');
+        const standardUserSection = document.getElementById('standardUserSection');
+        const adminSections = document.getElementById('adminSections');
+        const superadminSections = document.getElementById('superadminSections');
+        const assignedToolsList = document.getElementById('assignedToolsList');
+        const companyUsersList = document.getElementById('companyUsersList');
+        const assignUserSelect = document.getElementById('assign-user-select');
+        const assignToolSelect = document.getElementById('assign-tool-select');
+        const assignCompanySelect = document.getElementById('assign-company-select');
+        const assignCompToolSelect = document.getElementById('assign-comp-tool-select');
+
+        let currentUser = null;
+        let jwtToken = null;
+        let availableCompanyUsers = []; // Cache for user dropdowns
+        let availableCompanyTools = []; // Cache for tool dropdowns
+
+        function showDashboardMessage(msg, type) {
+            dashboardMessageDiv.className = type;
+            dashboardMessageDiv.textContent = msg;
+        }
+
+        // --- Helper for authenticated fetch requests ---
+        async function authFetch(url, options = {}) {
+            const headers = {
+                'Content-Type': 'application/json',
+                ...options.headers,
+            };
+            if (jwtToken) {
+                headers['Authorization'] = `Bearer ${jwtToken}`;
+            }
+
+            const response = await fetch(url, { ...options, headers });
+            const data = await response.json();
+
+            if (!response.ok) {
+                // Handle token expiration or invalid token
+                if (response.status === 401 && data.message === 'Token expired.') {
+                    showDashboardMessage('Session expired. Please log in again.', 'error');
+                    setTimeout(logout, 2000); // Auto-logout on token expiration
+                }
+                throw new Error(data.message || `API error: ${response.status}`);
+            }
+            return data;
+        }
+
+        // --- Logout Function ---
+        function logout() {
+            localStorage.removeItem('jwtToken');
+            localStorage.removeItem('currentUser');
+            window.location.href = '/index.html'; // Redirect to login page
+        }
+        logoutButton.addEventListener('click', logout);
+
+        // --- Dashboard Initialization ---
+        async function initializeDashboard() {
+            jwtToken = localStorage.getItem('jwtToken');
+            const currentUserString = localStorage.getItem('currentUser');
+
+            if (!jwtToken || !currentUserString) {
+                logout(); // Not logged in, redirect
+                return;
+            }
+
+            try {
+                currentUser = JSON.parse(currentUserString);
+                welcomeMessage.textContent = `Welcome, ${currentUser.username}! (${currentUser.role})`;
+
+                // Show/hide sections based on role
+                if (currentUser.role === 'standard') {
+                    standardUserSection.style.display = 'block';
+                    adminSections.style.display = 'none';
+                } else if (currentUser.role === 'admin' || currentUser.role === 'superadmin') {
+                    standardUserSection.style.display = 'none'; // Admins don't see this specific section usually
+                    adminSections.style.display = 'block';
+                    if (currentUser.role === 'superadmin') {
+                        superadminSections.style.display = 'block';
+                        await loadAllCompaniesAndTools(); // For superadmin's assignToolToCompany
+                    }
+                    await loadCompanyUsers(); // For admin's user management
+                    await loadAvailableToolsForAdmin(); // For admin's tool assignment
+                }
+
+                // Load initial data based on role
+                if (currentUser.role === 'standard') {
+                    await loadAssignedTools();
+                }
+
+            } catch (error) {
+                console.error('Dashboard init error:', error);
+                showDashboardMessage('Failed to initialize dashboard. Please try logging in again.', 'error');
+                logout();
+            }
+        }
+
+        // --- Standard User Functions ---
+        async function loadAssignedTools() {
+            try {
+                const data = await authFetch(`${API_BASE}/getAssignedTools`);
+                if (data.tools && data.tools.length > 0) {
+                    assignedToolsList.innerHTML = ''; // Clear "No tools" message
+                    data.tools.forEach(tool => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<strong>${tool.tool_name}</strong>: ${tool.tool_description} (Assigned: ${new Date(tool.assigned_at).toLocaleDateString()})`;
+                        assignedToolsList.appendChild(li);
+                    });
+                } else {
+                    assignedToolsList.innerHTML = '<li>No tools assigned to you yet.</li>';
+                }
+            } catch (error) {
+                console.error('Error loading assigned tools:', error);
+                showDashboardMessage(`Error loading your tools: ${error.message}`, 'error');
+                assignedToolsList.innerHTML = '<li>Failed to load tools.</li>';
+            }
+        }
+
+        // --- Admin Functions ---
+        async function loadCompanyUsers() {
+            try {
+                const data = await authFetch(`${API_BASE}/getCompanyUsers`);
+                availableCompanyUsers = data.users; // Cache users for dropdowns
+                companyUsersList.innerHTML = '';
+                assignUserSelect.innerHTML = '<option value="">-- Select a User --</option>'; // Reset dropdown
+
+                if (availableCompanyUsers && availableCompanyUsers.length > 0) {
+                    availableCompanyUsers.forEach(user => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<strong>${user.username}</strong> (${user.email}) - Role: ${user.role} ${user.is_active ? '' : '(Inactive)'} <button class="action-button danger-button" data-user-id="${user.id}" onclick="deactivateUser(event)">Deactivate</button>`;
+                        companyUsersList.appendChild(li);
+
+                        const option = document.createElement('option');
+                        option.value = user.id;
+                        option.textContent = `${user.username} (${user.email})`;
+                        assignUserSelect.appendChild(option);
+                    });
+                } else {
+                    companyUsersList.innerHTML = '<li>No other users in your company.</li>';
+                }
+            } catch (error) {
+                console.error('Error loading company users:', error);
+                showDashboardMessage(`Error loading company users: ${error.message}`, 'error');
+                companyUsersList.innerHTML = '<li>Failed to load company users.</li>';
+            }
+        }
+
+        async function loadAvailableToolsForAdmin() {
+            try {
+                const data = await authFetch(`${API_BASE}/getAvailableTools`);
+                availableCompanyTools = data.tools; // Cache tools for dropdowns
+                assignToolSelect.innerHTML = '<option value="">-- Select a Tool --</option>'; // Reset dropdown
+
+                if (availableCompanyTools && availableCompanyTools.length > 0) {
+                    availableCompanyTools.forEach(tool => {
+                        const option = document.createElement('option');
+                        option.value = tool.tool_id;
+                        option.textContent = `${tool.tool_name} (${tool.is_global ? 'Global' : 'Custom'})`;
+                        assignToolSelect.appendChild(option);
+                    });
+                } else {
+                    assignToolSelect.innerHTML = '<option value="">No tools available for assignment.</option>';
+                }
+            } catch (error) {
+                console.error('Error loading available tools:', error);
+                showDashboardMessage(`Error loading available tools: ${error.message}`, 'error');
+            }
+        }
+
+        // --- Admin: Assign Tool to User Handler ---
+        document.getElementById('assignToolForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            showDashboardMessage('Assigning tool...', '');
+            const targetUserId = assignUserSelect.value;
+            const toolId = assignToolSelect.value;
+
+            if (!targetUserId || !toolId) {
+                showDashboardMessage('Please select both a user and a tool.', 'error');
+                return;
+            }
+
+            try {
+                const data = await authFetch(`${API_BASE}/assignTool`, {
+                    method: 'POST',
+                    body: JSON.stringify({ targetUserId, toolId }),
+                });
+                showDashboardMessage(data.message || 'Tool assigned successfully!', 'success');
+                document.getElementById('assignToolForm').reset();
+            } catch (error) {
+                console.error('Assign tool error:', error);
+                showDashboardMessage(`Failed to assign tool: ${error.message}`, 'error');
+            }
+        });
+
+        // --- Admin: Register New User Handler ---
+        document.getElementById('adminRegisterForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            showDashboardMessage('Registering new user...', '');
+            const username = document.getElementById('admin-reg-username').value;
+            const email = document.getElementById('admin-reg-email').value;
+            const password = document.getElementById('admin-reg-password').value;
+
+            try {
+                const data = await authFetch(`${API_BASE}/adminRegisterUser`, {
+                    method: 'POST',
+                    body: JSON.stringify({ username, email, password }),
+                });
+                showDashboardMessage(data.message || 'New user registered successfully!', 'success');
+                document.getElementById('adminRegisterForm').reset();
+                await loadCompanyUsers(); // Refresh user list
+            } catch (error) {
+                console.error('Admin register user error:', error);
+                showDashboardMessage(`Failed to register new user: ${error.message}`, 'error');
+            }
+        });
+
+        // --- Admin: Deactivate User Handler ---
+        async function deactivateUser(event) {
+            const userIdToDeactivate = event.target.dataset.userId;
+            if (!confirm(`Are you sure you want to deactivate user with ID: ${userIdToDeactivate}?`)) {
+                return;
+            }
+            showDashboardMessage('Deactivating user...', '');
+
+            try {
+                const data = await authFetch(`${API_BASE}/deactivateUser`, {
+                    method: 'POST',
+                    body: JSON.stringify({ targetUserId: userIdToDeactivate }),
+                });
+                showDashboardMessage(data.message || 'User deactivated successfully!', 'success');
+                await loadCompanyUsers(); // Refresh user list
+            } catch (error) {
+                console.error('Deactivate user error:', error);
+                showDashboardMessage(`Failed to deactivate user: ${error.message}`, 'error');
+            }
+        }
+
+
+        // --- Superadmin Functions ---
+
+        // (Superadmin) Helper to load all companies for dropdown
+        async function loadAllCompanies() {
+            try {
+                // NOTE: You will need to create a new Netlify Function
+                // for Superadmin to get ALL companies. For simplicity,
+                // I'm assuming a placeholder function like 'getAllCompanies'
+                // which would be a protected GET endpoint for superadmins.
+                // If not, you'd manually populate for testing.
+                const data = await authFetch(`${API_BASE}/getAllCompanies`); // TODO: Implement this function!
+                if (data.companies && data.companies.length > 0) {
+                    assignCompanySelect.innerHTML = '<option value="">-- Select a Company --</option>';
+                    data.companies.forEach(company => {
+                        const option = document.createElement('option');
+                        option.value = company.id;
+                        option.textContent = `${company.name} (${company.city}, ${company.state})`;
+                        assignCompanySelect.appendChild(option);
+                    });
+                } else {
+                    assignCompanySelect.innerHTML = '<option value="">No companies found.</option>';
+                }
+            } catch (error) {
+                console.error('Error loading all companies:', error);
+                showDashboardMessage(`Error loading companies: ${error.message}`, 'error');
+            }
+        }
+
+        // (Superadmin) Helper to load all tools for dropdown
+        async function loadAllTools() {
+            try {
+                // NOTE: You will need to create a new Netlify Function
+                // for Superadmin to get ALL tools (global + non-global).
+                // For simplicity, I'm assuming a placeholder 'getAllTools'
+                // which would be a protected GET endpoint for superadmins.
+                const data = await authFetch(`${API_BASE}/getAllTools`); // TODO: Implement this function!
+                if (data.tools && data.tools.length > 0) {
+                    assignCompToolSelect.innerHTML = '<option value="">-- Select a Tool --</option>';
+                    data.tools.forEach(tool => {
+                        const option = document.createElement('option');
+                        option.value = tool.id;
+                        option.textContent = `${tool.name} (${tool.is_global ? 'Global' : 'Custom'})`;
+                        assignCompToolSelect.appendChild(option);
+                    });
+                } else {
+                    assignCompToolSelect.innerHTML = '<option value="">No tools found.</option>';
+                }
+            } catch (error) {
+                console.error('Error loading all tools:', error);
+                showDashboardMessage(`Error loading all tools: ${error.message}`, 'error');
+            }
+        }
+
+        // (Superadmin) Combined loader for dropdowns
+        async function loadAllCompaniesAndTools() {
+            await loadAllCompanies();
+            await loadAllTools();
+        }
+
+
+        // --- Superadmin: Create Tool Handler ---
+        document.getElementById('createToolForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            showDashboardMessage('Creating tool...', '');
+            const name = document.getElementById('new-tool-name').value;
+            const description = document.getElementById('new-tool-description').value;
+            const is_global = document.getElementById('new-tool-is-global').checked;
+
+            try {
+                const data = await authFetch(`${API_BASE}/createTool`, {
+                    method: 'POST',
+                    body: JSON.stringify({ name, description, is_global }),
+                });
+                showDashboardMessage(data.message || 'Tool created successfully!', 'success');
+                document.getElementById('createToolForm').reset();
+                await loadAvailableToolsForAdmin(); // Refresh tools list for this admin
+                if (currentUser.role === 'superadmin') {
+                    await loadAllTools(); // Refresh all tools list for superadmin dropdown
+                }
+            } catch (error) {
+                console.error('Create tool error:', error);
+                showDashboardMessage(`Failed to create tool: ${error.message}`, 'error');
+            }
+        });
+
+        // --- Superadmin: Assign Tool to Company Handler ---
+        document.getElementById('assignToolToCompanyForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            showDashboardMessage('Assigning tool to company...', '');
+            const companyId = assignCompanySelect.value;
+            const toolId = assignCompToolSelect.value;
+
+            if (!companyId || !toolId) {
+                showDashboardMessage('Please select both a company and a tool.', 'error');
+                return;
+            }
+
+            try {
+                const data = await authFetch(`${API_BASE}/assignToolToCompany`, {
+                    method: 'POST',
+                    body: JSON.stringify({ companyId, toolId }),
+                });
+                showDashboardMessage(data.message || 'Tool assigned to company successfully!', 'success');
+                document.getElementById('assignToolToCompanyForm').reset();
+                await loadAvailableToolsForAdmin(); // Refresh tools available to the superadmin (if they are also an admin of a company)
+            } catch (error)
+            {
+                console.error('Assign tool to company error:', error);
+                showDashboardMessage(`Failed to assign tool to company: ${error.message}`, 'error');
+            }
+        });
+
+
+        // Initialize dashboard on page load
+        initializeDashboard();
+    </script>
+</body>
+</html>
