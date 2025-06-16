@@ -1,14 +1,12 @@
 [build]
-  command = "echo 'Building site...'" # Or your actual build command if you have one
-  publish = "." # This tells Netlify to serve files from the root directory
+  command = "echo 'Building site...'"
+  publish = "."
 
 [functions]
-  directory = "functions" # This tells Netlify where your serverless functions are located
-  node_bundler = "esbuild" # A fast bundler for Node.js functions
-  # --- ADD THESE TWO LINES ---
-  target = "node18" # Explicitly sets esbuild to target Node.js 18, supporting modern JS syntax
-  external_node_modules = ["pg", "bcryptjs", "jsonwebtoken"] # Tells esbuild NOT to bundle these
-  # ---------------------------
+  directory = "functions"
+  node_bundler = "esbuild"
+  target = "node18"
+  external_node_modules = ["pg", "bcryptjs", "jsonwebtoken"]
 
 [[redirects]]
   from = "/api/*"
