@@ -3,49 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register for Spreadsheet Tools</title>
+    <title>Welcome - Spreadsheet Automation</title>
     <style>
-        body { font-family: sans-serif; margin: 20px; }
-        .container { max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; flex-direction: column; }
+        .container { background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 400px; margin-bottom: 20px; }
+        h1, h2 { text-align: center; color: #333; margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #555; font-weight: bold; }
         input[type="text"], input[type="email"], input[type="password"] {
-            width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px;
+            width: calc(100% - 22px); padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;
         }
-        button { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1.1rem; font-weight: bold; transition: background-color 0.3s ease; }
         button:hover { background-color: #0056b3; }
-        #message { margin-top: 15px; padding: 10px; border-radius: 4px; }
-        .success { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
-        .error { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+        .toggle-form { text-align: center; margin-top: 15px; font-size: 0.9rem; }
+        .toggle-form a { color: #007bff; text-decoration: none; cursor: pointer; }
+        .toggle-form a:hover { text-decoration: underline; }
+        #message { margin-top: 15px; padding: 10px; border-radius: 5px; text-align: center; font-weight: bold; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Register for Spreadsheet Tools</h1>
-        <form id="registrationForm">
-            <label for="username">Username:</label>
-            <input type="text" id="username" required>
+        <div id="register-section">
+            <h2>Register</h2>
+            <form id="registrationForm">
+                <label for="reg-username">Username:</label>
+                <input type="text" id="reg-username" required>
 
-            <label for="email">Email:</label>
-            <input type="email" id="email" required>
+                <label for="reg-email">Email:</label>
+                <input type="email" id="reg-email" required>
 
-            <label for="password">Password:</label>
-            <input type="password" id="password" required>
+                <label for="reg-password">Password:</label>
+                <input type="password" id="reg-password" required>
 
-            <label for="companyName">Company Name:</label>
-            <input type="text" id="companyName" required>
+                <label for="reg-companyName">Company Name:</label>
+                <input type="text" id="reg-companyName" required>
 
-            <label for="companyCity">Company City:</label>
-            <input type="text" id="companyCity">
+                <label for="reg-companyCity">Company City (for new companies):</label>
+                <input type="text" id="reg-companyCity">
 
-            <label for="companyState">Company State:</label>
-            <input type="text" id="companyState">
+                <label for="reg-companyState">Company State (for new companies):</label>
+                <input type="text" id="reg-companyState">
 
-            <button type="submit">Register</button>
-        </form>
+                <button type="submit">Register</button>
+            </form>
+            <div class="toggle-form">
+                Already have an account? <a href="#" onclick="showLoginForm()">Login here</a>
+            </div>
+        </div>
+
+        <div id="login-section" style="display: none;">
+            <h2>Login</h2>
+            <form id="loginForm">
+                <label for="login-username">Username:</label>
+                <input type="text" id="login-username" required>
+
+                <label for="login-password">Password:</label>
+                <input type="password" id="login-password" required>
+
+                <button type="submit">Login</button>
+            </form>
+            <div class="toggle-form">
+                Don't have an account? <a href="#" onclick="showRegisterForm()">Register here</a>
+            </div>
+        </div>
         <div id="message"></div>
     </div>
 
     <script>
-        // Your JavaScript will go here
+        const API_BASE = '/.netlify/functions'; // Or '/api' if you set up the redirect
+
+        const messageDiv = document.getElementById('message');
+        const registerSection = document.getElementById('register-section');
+        const loginSection = document.getElementById('login-section');
+
+        function showMessage(msg, type) {
+            messageDiv.className = type;
+            messageDiv.textContent = msg;
+        }
+
+        function showLoginForm() {
+            registerSection.style.display = 'none';
+            loginSection.style.display = 'block';
+            messageDiv.textContent = ''; // Clear message
+        }
+
+        function showRegisterForm() {
+            registerSection.style.display = 'block';
+            loginSection.style.display = 'none';
+            messageDiv.textContent = ''; // Clear message
+        }
+
+        // --- Registration Form Handler ---
+        document.getElementById('registrationForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            showMessage('Registering...', '');
+
+            const username = document.getElementById('reg-username').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            const companyName = document.getElementById('reg-companyName').value;
+            const companyCity = document.getElementById('reg-companyCity').value;
+            const companyState = document.getElementById('reg-companyState').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password, companyName, companyCity, companyState }),
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    showMessage(data.message || 'Registration successful!', 'success');
+                    document.getElementById('registrationForm').reset();
+                    // Optionally, redirect to login or automatically log in
+                    setTimeout(showLoginForm, 2000); // Show login form after 2 seconds
+                } else {
+                    showMessage(data.message || 'Registration failed.', 'error');
+                }
+            } catch (error) {
+                console.error('Registration fetch error:', error);
+                showMessage('Network error during registration.', 'error');
+            }
+        });
+
+        // --- Login Form Handler ---
+        document.getElementById('loginForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            showMessage('Logging in...', '');
+
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password }),
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    showMessage(data.message || 'Login successful!', 'success');
+                    localStorage.setItem('jwtToken', data.token); // Store JWT
+                    localStorage.setItem('currentUser', JSON.stringify(data.user)); // Store user info (for convenience)
+                    window.location.href = '/dashboard.html'; // Redirect to dashboard
+                } else {
+                    showMessage(data.message || 'Login failed.', 'error');
+                }
+            } catch (error) {
+                console.error('Login fetch error:', error);
+                showMessage('Network error during login.', 'error');
+            }
+        });
+
+        // Check if already logged in (e.g., if user navigates back)
+        if (localStorage.getItem('jwtToken') && localStorage.getItem('currentUser')) {
+            window.location.href = '/dashboard.html';
+        }
     </script>
 </body>
 </html>
