@@ -1,0 +1,12 @@
+[build]
+  command = "echo 'Building site...'" # Or your actual build command if you have one
+  publish = "." # This tells Netlify to serve files from the root directory
+
+[functions]
+  directory = "functions" # This tells Netlify where your serverless functions are located
+  node_bundler = "esbuild" # A fast bundler for Node.js functions
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
